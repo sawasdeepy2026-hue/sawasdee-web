@@ -87,11 +87,11 @@
 }
 
 .desktop-nav {
-  display: flex;
+  display: flex !important;
 }
 
 .mobile-nav-toggle {
-  display: none;
+  display: none !important;
 }
 
 /* Base button animations */

@@ -71,237 +71,239 @@ export function Header({
         transition: 'var(--transition)'
       }}
     >
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', minHeight: '150px' }}>
+      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '120px', gap: '1rem', width: '100%' }}>
         
-        {/* Left Side: Admin Login & Language Selector (Desktop) */}
-        <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* Admin Profile Login Button */}
-          <div 
-            ref={adminRef}
-            style={{ position: 'relative' }}
-          >
-            {isAdmin ? (
+        {/* Column 1 (Left): Desktop Controls or Mobile Menu Hamburger (flex-start) */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+          {/* Left Side: Admin Login & Language Selector (Desktop) */}
+          <div className="desktop-nav" style={{ alignItems: 'center', gap: '0.75rem' }}>
+            {/* Admin Profile Login Button */}
+            <div 
+              ref={adminRef}
+              style={{ position: 'relative' }}
+            >
+              {isAdmin ? (
+                <div 
+                  onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem', 
+                    background: 'rgba(210, 125, 45, 0.12)', 
+                    padding: '0.5rem 1rem', 
+                    borderRadius: '50px', 
+                    border: '1px solid var(--primary)',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    boxShadow: '0 0 10px rgba(210, 125, 45, 0.2)'
+                  }}
+                >
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80' }}></span>
+                  <span style={{ color: 'white', fontSize: '0.85rem', fontWeight: 700 }}>
+                    {adminUsername}
+                  </span>
+                  <ChevronDown size={14} color="var(--primary)" style={{ transform: isAdminMenuOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+                </div>
+              ) : (
+                <div 
+                  onClick={onLoginClick}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    background: 'rgba(28, 23, 18, 0.6)',
+                    border: '1px solid rgba(210, 125, 45, 0.15)',
+                    cursor: 'pointer',
+                    color: 'var(--text-muted)',
+                    transition: 'var(--transition)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--primary)';
+                    e.currentTarget.style.color = 'var(--primary)';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(210, 125, 45, 0.15)';
+                    e.currentTarget.style.color = 'var(--text-muted)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                  title="Acceso Administrador"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+              )}
+
+              {isAdminMenuOpen && isAdmin && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '110%',
+                    left: 0,
+                    width: '180px',
+                    background: 'rgba(15, 16, 20, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(210, 125, 45, 0.2)',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                    overflow: 'hidden',
+                    zIndex: 100,
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                >
+                  <div
+                    onClick={() => {
+                      setIsAdminMenuOpen(false);
+                      onEditCredentialsClick();
+                    }}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      cursor: 'pointer',
+                      color: 'white',
+                      fontSize: '0.85rem',
+                      fontWeight: 500,
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    ⚙️ Credenciales
+                  </div>
+                  <div
+                    onClick={() => {
+                      setIsAdminMenuOpen(false);
+                      onLogoutClick();
+                    }}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      cursor: 'pointer',
+                      color: '#ff4d4d',
+                      fontSize: '0.85rem',
+                      fontWeight: 500,
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 77, 77, 0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    🚪 Cerrar Sesión
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Language Selector */}
+            <div 
+              ref={langRef}
+              style={{ position: 'relative' }}
+            >
               <div 
-                onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                onClick={() => setIsLangOpen(!isLangOpen)}
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '0.5rem', 
-                  background: 'rgba(210, 125, 45, 0.12)', 
+                  background: 'rgba(28, 23, 18, 0.6)', 
                   padding: '0.5rem 1rem', 
                   borderRadius: '50px', 
-                  border: '1px solid var(--primary)',
+                  border: '1px solid rgba(210, 125, 45, 0.15)',
                   cursor: 'pointer',
-                  userSelect: 'none',
-                  boxShadow: '0 0 10px rgba(210, 125, 45, 0.2)'
+                  userSelect: 'none'
                 }}
               >
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80' }}></span>
-                <span style={{ color: 'white', fontSize: '0.85rem', fontWeight: 700 }}>
-                  {adminUsername}
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>
+                  {t('ui.language', 'Idioma')}:
                 </span>
-                <ChevronDown size={14} color="var(--primary)" style={{ transform: isAdminMenuOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
-              </div>
-            ) : (
-              <div 
-                onClick={onLoginClick}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '50%',
-                  background: 'rgba(28, 23, 18, 0.6)',
-                  border: '1px solid rgba(210, 125, 45, 0.15)',
-                  cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                  transition: 'var(--transition)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--primary)';
-                  e.currentTarget.style.color = 'var(--primary)';
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(210, 125, 45, 0.15)';
-                  e.currentTarget.style.color = 'var(--text-muted)';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-                title="Acceso Administrador"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-              </div>
-            )}
-
-            {isAdminMenuOpen && isAdmin && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  top: '110%',
-                  left: 0,
-                  width: '180px',
-                  background: 'rgba(15, 16, 20, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(210, 125, 45, 0.2)',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                  overflow: 'hidden',
-                  zIndex: 100,
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-              >
-                <div
-                  onClick={() => {
-                    setIsAdminMenuOpen(false);
-                    onEditCredentialsClick();
-                  }}
-                  style={{
-                    padding: '0.75rem 1rem',
-                    cursor: 'pointer',
-                    color: 'white',
-                    fontSize: '0.85rem',
-                    fontWeight: 500,
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                    transition: 'background 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  ⚙️ Credenciales
-                </div>
-                <div
-                  onClick={() => {
-                    setIsAdminMenuOpen(false);
-                    onLogoutClick();
-                  }}
-                  style={{
-                    padding: '0.75rem 1rem',
-                    cursor: 'pointer',
-                    color: '#ff4d4d',
-                    fontSize: '0.85rem',
-                    fontWeight: 500,
-                    transition: 'background 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 77, 77, 0.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  🚪 Cerrar Sesión
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.2rem' }}>
+                  <img src={currentLang.flagUrl} alt={currentLang.name} style={{ width: '16px', borderRadius: '2px' }} />
+                  <span style={{ color: 'white', fontSize: '0.9rem', fontWeight: 600 }}>{currentLang.name}</span>
+                  <ChevronDown size={14} color="var(--text-muted)" style={{ transform: isLangOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Language Selector */}
-          <div 
-            ref={langRef}
-            style={{ position: 'relative' }}
-          >
-            <div 
-              onClick={() => setIsLangOpen(!isLangOpen)}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem', 
-                background: 'rgba(28, 23, 18, 0.6)', 
-                padding: '0.5rem 1rem', 
-                borderRadius: '50px', 
-                border: '1px solid rgba(210, 125, 45, 0.15)',
-                cursor: 'pointer',
-                userSelect: 'none'
-              }}
-            >
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>
-                {t('ui.language', 'Idioma')}:
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.2rem' }}>
-                <img src={currentLang.flagUrl} alt={currentLang.name} style={{ width: '16px', borderRadius: '2px' }} />
-                <span style={{ color: 'white', fontSize: '0.9rem', fontWeight: 600 }}>{currentLang.name}</span>
-                <ChevronDown size={14} color="var(--text-muted)" style={{ transform: isLangOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
-              </div>
+              {isLangOpen && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '110%',
+                    left: 0,
+                    width: '160px',
+                    background: 'rgba(15, 16, 20, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(210, 125, 45, 0.15)',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                    overflow: 'hidden',
+                    zIndex: 100,
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                >
+                  {LANGUAGES.map(lang => (
+                    <div
+                      key={lang.code}
+                      onClick={() => changeLanguage(lang.code)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        padding: '0.75rem 1rem',
+                        cursor: 'pointer',
+                        color: i18n.language === lang.code ? 'var(--primary)' : 'white',
+                        background: i18n.language === lang.code ? 'rgba(210, 125, 45, 0.1)' : 'transparent',
+                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        transition: '0.2s',
+                        fontWeight: i18n.language === lang.code ? 700 : 500
+                      }}
+                      onMouseEnter={(e) => {
+                        if (i18n.language !== lang.code) {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (i18n.language !== lang.code) {
+                          e.currentTarget.style.background = 'transparent';
+                        }
+                      }}
+                    >
+                      <img src={lang.flagUrl} alt={lang.name} style={{ width: '18px', borderRadius: '2px' }} />
+                      {lang.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
 
-            {isLangOpen && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  top: '110%',
-                  left: 0,
-                  width: '160px',
-                  background: 'rgba(15, 16, 20, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(210, 125, 45, 0.15)',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                  overflow: 'hidden',
-                  zIndex: 100,
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-              >
-                {LANGUAGES.map(lang => (
-                  <div
-                    key={lang.code}
-                    onClick={() => changeLanguage(lang.code)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      padding: '0.75rem 1rem',
-                      cursor: 'pointer',
-                      color: i18n.language === lang.code ? 'var(--primary)' : 'white',
-                      background: i18n.language === lang.code ? 'rgba(210, 125, 45, 0.1)' : 'transparent',
-                      borderBottom: '1px solid rgba(255,255,255,0.05)',
-                      transition: '0.2s',
-                      fontWeight: i18n.language === lang.code ? 700 : 500
-                    }}
-                    onMouseEnter={(e) => {
-                      if (i18n.language !== lang.code) {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (i18n.language !== lang.code) {
-                        e.currentTarget.style.background = 'transparent';
-                      }
-                    }}
-                  >
-                    <img src={lang.flagUrl} alt={lang.name} style={{ width: '18px', borderRadius: '2px' }} />
-                    {lang.name}
-                  </div>
-                ))}
-              </div>
-            )}
+          {/* Hamburger Mobile Menu Toggle */}
+          <div 
+            className="mobile-nav-toggle"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            style={{ 
+               alignItems: 'center', 
+               justifyContent: 'center',
+               width: '44px',
+               height: '44px',
+               borderRadius: '8px',
+               background: 'rgba(28, 23, 18, 0.6)',
+               border: '1px solid rgba(210, 125, 45, 0.15)',
+               cursor: 'pointer',
+               transition: 'var(--transition)'
+            }}
+          >
+            <Menu size={22} color="var(--primary)" />
           </div>
         </div>
 
-        {/* Hamburger Mobile Menu Toggle */}
-        <div 
-          className="mobile-nav-toggle"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          style={{ 
-             display: 'flex',
-             alignItems: 'center', 
-             justifyContent: 'center',
-             width: '44px',
-             height: '44px',
-             borderRadius: '8px',
-             background: 'rgba(28, 23, 18, 0.6)',
-             border: '1px solid rgba(210, 125, 45, 0.15)',
-             cursor: 'pointer',
-             transition: 'var(--transition)'
-          }}
-        >
-          <Menu size={22} color="var(--primary)" />
-        </div>
-
-        {/* Center: Brand Logo & Name */}
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-          <svg width="360" height="170" viewBox="0 0 360 170">
+        {/* Column 2 (Center): Brand Logo & Name (center) */}
+        <div style={{ flex: '0 0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <svg width="280" height="110" viewBox="0 0 360 170" style={{ pointerEvents: 'none' }}>
             <defs>
               <filter id="remove-black" colorInterpolationFilters="sRGB">
                 <feColorMatrix type="matrix" values="
@@ -322,8 +324,8 @@ export function Header({
           </svg>
         </div>
 
-        {/* Right Side: Cart Button */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        {/* Column 3 (Right): Cart Button (flex-end) */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <button 
             onClick={onOpenCart}
             style={{
