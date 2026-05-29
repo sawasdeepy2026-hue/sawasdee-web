@@ -1046,41 +1046,42 @@ function App() {
       )}
 
       {/* Floating Reservation Button */}
-      <button 
-        onClick={() => setIsReservationOpen(true)}
-        style={{
-          position: 'fixed',
-          bottom: '2rem',
-          right: totalCount > 0 ? 'auto' : '2rem',
-          left: totalCount > 0 ? '2rem' : 'auto', 
-          background: 'rgba(28, 23, 18, 0.9)',
-          backdropFilter: 'blur(10px)',
-          color: 'var(--primary)',
-          border: '1px solid rgba(210, 125, 45, 0.3)',
-          borderRadius: '50px',
-          padding: '1rem 1.6rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          fontSize: '1.05rem',
-          fontWeight: 800,
-          boxShadow: 'var(--shadow-lg)',
-          cursor: 'pointer',
-          zIndex: 40,
-          transition: 'var(--transition)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)';
-          e.currentTarget.style.background = 'var(--bg-card)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.background = 'rgba(28, 23, 18, 0.9)';
-        }}
-      >
-        <CalendarPlus size={20} />
-        Reservar una mesa
-      </button>
+      {totalCount === 0 && (
+        <button 
+          onClick={() => setIsReservationOpen(true)}
+          style={{
+            position: 'fixed',
+            bottom: '2rem',
+            right: '2rem',
+            background: 'rgba(28, 23, 18, 0.9)',
+            backdropFilter: 'blur(10px)',
+            color: 'var(--primary)',
+            border: '1px solid rgba(210, 125, 45, 0.3)',
+            borderRadius: '50px',
+            padding: '1rem 1.6rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            fontSize: '1.05rem',
+            fontWeight: 800,
+            boxShadow: 'var(--shadow-lg)',
+            cursor: 'pointer',
+            zIndex: 40,
+            transition: 'var(--transition)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.background = 'var(--bg-card)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.background = 'rgba(28, 23, 18, 0.9)';
+          }}
+        >
+          <CalendarPlus size={20} />
+          Reservar una mesa
+        </button>
+      )}
 
       {/* Cart Modal component */}
       <CartModal 
