@@ -10,6 +10,13 @@ interface HeaderProps {
   onEditCredentialsClick: () => void;
   onUploadPromoImage: (file: File) => void;
   promoImage: string;
+  promoPrice: number;
+  onUpdatePromoPrice: (price: number) => void;
+  onDeletePromoImage: () => void;
+  promoName: string;
+  promoDesc: string;
+  onUpdatePromoName: (name: string) => void;
+  onUpdatePromoDesc: (desc: string) => void;
 }
 
 const LANGUAGES = [
@@ -27,7 +34,14 @@ export function Header({
   onLogoutClick,
   onEditCredentialsClick,
   onUploadPromoImage,
-  promoImage
+  promoImage,
+  promoPrice,
+  onUpdatePromoPrice,
+  onDeletePromoImage,
+  promoName,
+  promoDesc,
+  onUpdatePromoName,
+  onUpdatePromoDesc
 }: HeaderProps) {
   const { i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -158,7 +172,7 @@ export function Header({
             </p>
 
             {isAdmin && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.25rem' }}>
                 <label 
                   style={{
                     display: 'flex',
@@ -202,16 +216,128 @@ export function Header({
                     style={{ display: 'none' }} 
                   />
                 </label>
-                {promoImage && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0 0.25rem' }}>
-                    <span>Miniatura actual:</span>
-                    <img 
-                      src={promoImage} 
-                      alt="Miniatura Promo" 
-                      style={{ height: '35px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)', objectFit: 'cover', aspectRatio: '1' }} 
+
+                {/* Form fields & miniature */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  
+                  {/* Name field */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Nombre de la Promo:</span>
+                    <input 
+                      type="text"
+                      value={promoName || ''}
+                      onChange={(e) => onUpdatePromoName(e.target.value)}
+                      placeholder="Ej. ¡Promoción Especial!"
+                      style={{
+                        background: '#0a0b0d',
+                        border: '1px solid rgba(210,125,45,0.2)',
+                        borderRadius: '6px',
+                        padding: '0.4rem 0.6rem',
+                        color: 'white',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        outline: 'none',
+                        transition: 'border-color 0.2s',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                      onBlur={(e) => e.target.style.borderColor = 'rgba(210,125,45,0.2)'}
                     />
                   </div>
-                )}
+
+                  {/* Description field */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Descripción de la Promo:</span>
+                    <input 
+                      type="text"
+                      value={promoDesc || ''}
+                      onChange={(e) => onUpdatePromoDesc(e.target.value)}
+                      placeholder="Ej. Agrega este plato exclusivo..."
+                      style={{
+                        background: '#0a0b0d',
+                        border: '1px solid rgba(210,125,45,0.2)',
+                        borderRadius: '6px',
+                        padding: '0.4rem 0.6rem',
+                        color: 'white',
+                        fontSize: '0.85rem',
+                        outline: 'none',
+                        transition: 'border-color 0.2s',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                      onBlur={(e) => e.target.style.borderColor = 'rgba(210,125,45,0.2)'}
+                    />
+                  </div>
+
+                  {/* Price & Miniature Row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Precio Promo (Gs):</span>
+                      <input 
+                        type="number"
+                        value={promoPrice || ''}
+                        onChange={(e) => onUpdatePromoPrice(Number(e.target.value))}
+                        placeholder="Ej. 75000"
+                        style={{
+                          background: '#0a0b0d',
+                          border: '1px solid rgba(210,125,45,0.2)',
+                          borderRadius: '6px',
+                          padding: '0.4rem 0.6rem',
+                          color: 'white',
+                          fontSize: '0.85rem',
+                          fontWeight: 700,
+                          width: '100%',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          transition: 'border-color 0.2s'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                        onBlur={(e) => e.target.style.borderColor = 'rgba(210,125,45,0.2)'}
+                      />
+                    </div>
+
+                    {promoImage && (
+                      <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'visible', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img 
+                          src={promoImage} 
+                          alt="Miniatura Promo" 
+                          style={{ width: '100%', height: '100%', borderRadius: '6px', objectFit: 'cover' }} 
+                        />
+                        {/* Delete X overlay button */}
+                        <button
+                          onClick={onDeletePromoImage}
+                          title="Eliminar Promoción"
+                          style={{
+                            position: 'absolute',
+                            top: '-6px',
+                            right: '-6px',
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: '#ff4d4d',
+                            border: 'none',
+                            color: 'white',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+                            transition: '0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                </div>
               </div>
             )}
 
