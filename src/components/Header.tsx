@@ -1,4 +1,4 @@
-import { ShoppingCart, ChevronDown } from 'lucide-react';
+import { ShoppingCart, ChevronDown, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 
@@ -32,6 +32,7 @@ export function Header({
   const { t, i18n } = useTranslation();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const langRef = useRef<HTMLDivElement>(null);
   const adminRef = useRef<HTMLDivElement>(null);
@@ -72,8 +73,8 @@ export function Header({
     >
       <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', minHeight: '150px' }}>
         
-        {/* Left Side: Admin Login & Language Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Left Side: Admin Login & Language Selector (Desktop) */}
+        <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {/* Admin Profile Login Button */}
           <div 
             ref={adminRef}
@@ -181,12 +182,12 @@ export function Header({
                   style={{
                     padding: '0.75rem 1rem',
                     cursor: 'pointer',
-                    color: '#f87171',
+                    color: '#ff4d4d',
                     fontSize: '0.85rem',
-                    fontWeight: 600,
+                    fontWeight: 500,
                     transition: 'background 0.2s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(248, 113, 113, 0.08)'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 77, 77, 0.1)'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
                   🚪 Cerrar Sesión
@@ -249,23 +250,53 @@ export function Header({
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.6rem',
+                      gap: '0.75rem',
                       padding: '0.75rem 1rem',
                       cursor: 'pointer',
+                      color: i18n.language === lang.code ? 'var(--primary)' : 'white',
                       background: i18n.language === lang.code ? 'rgba(210, 125, 45, 0.1)' : 'transparent',
-                      borderLeft: `2px solid ${i18n.language === lang.code ? 'var(--primary)' : 'transparent'}`,
-                      transition: 'background 0.2s'
+                      borderBottom: '1px solid rgba(255,255,255,0.05)',
+                      transition: '0.2s',
+                      fontWeight: i18n.language === lang.code ? 700 : 500
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = i18n.language === lang.code ? 'rgba(210, 125, 45, 0.1)' : 'transparent'}
+                    onMouseEnter={(e) => {
+                      if (i18n.language !== lang.code) {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (i18n.language !== lang.code) {
+                        e.currentTarget.style.background = 'transparent';
+                      }
+                    }}
                   >
                     <img src={lang.flagUrl} alt={lang.name} style={{ width: '18px', borderRadius: '2px' }} />
-                    <span style={{ color: 'white', fontSize: '0.85rem', fontWeight: 500 }}>{lang.name}</span>
+                    {lang.name}
                   </div>
                 ))}
               </div>
             )}
           </div>
+        </div>
+
+        {/* Hamburger Mobile Menu Toggle */}
+        <div 
+          className="mobile-nav-toggle"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          style={{ 
+             display: 'flex',
+             alignItems: 'center', 
+             justifyContent: 'center',
+             width: '44px',
+             height: '44px',
+             borderRadius: '8px',
+             background: 'rgba(28, 23, 18, 0.6)',
+             border: '1px solid rgba(210, 125, 45, 0.15)',
+             cursor: 'pointer',
+             transition: 'var(--transition)'
+          }}
+        >
+          <Menu size={22} color="var(--primary)" />
         </div>
 
         {/* Center: Brand Logo & Name */}
@@ -344,6 +375,78 @@ export function Header({
         </div>
 
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          background: 'rgba(10, 11, 13, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(210, 125, 45, 0.15)',
+          padding: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+          zIndex: 40,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+        }}>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'white', fontWeight: 600 }}>Menú Principal</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {isAdmin ? (
+              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(210,125,45,0.1)' }}>
+                <div style={{ color: 'var(--primary)', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  Admin: {adminUsername}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={() => { onEditCredentialsClick(); setIsMobileMenuOpen(false); }} className="btn" style={{ flex: 1, padding: '0.5rem', background: 'rgba(255,255,255,0.1)', color: 'white', fontSize: '0.85rem' }}>Credenciales</button>
+                  <button onClick={() => { onLogoutClick(); setIsMobileMenuOpen(false); }} className="btn" style={{ flex: 1, padding: '0.5rem', background: 'rgba(255,50,50,0.1)', color: '#ff4d4d', fontSize: '0.85rem' }}>Salir</button>
+                </div>
+              </div>
+            ) : (
+              <button 
+                onClick={() => { onLoginClick(); setIsMobileMenuOpen(false); }}
+                className="btn"
+                style={{ width: '100%', background: 'rgba(210, 125, 45, 0.1)', color: 'var(--primary)', border: '1px solid rgba(210, 125, 45, 0.2)' }}
+              >
+                Acceso Administrador
+              </button>
+            )}
+
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{t('ui.language', 'Idioma')}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {LANGUAGES.map(lang => (
+                  <div
+                    key={lang.code}
+                    onClick={() => { changeLanguage(lang.code); setIsMobileMenuOpen(false); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem',
+                      background: i18n.language === lang.code ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                      color: i18n.language === lang.code ? 'black' : 'white',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      flex: '1 0 calc(50% - 0.5rem)'
+                    }}
+                  >
+                    <img src={lang.flagUrl} alt={lang.name} style={{ width: '16px' }} />
+                    {lang.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
     </header>
   );
 }
