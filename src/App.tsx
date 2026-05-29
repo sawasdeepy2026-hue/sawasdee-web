@@ -1150,7 +1150,6 @@ function App() {
                     borderRadius: '8px', padding: '0.75rem 1rem',
                     color: 'white', outline: 'none', fontSize: '0.95rem'
                   }}
-                  placeholder="Ej. LIDIAYFRED"
                 />
               </div>
 
