@@ -8,6 +8,15 @@ import { ReservationDrawer } from './components/ReservationDrawer';
 import { MapPin, Phone, ShieldCheck, Heart, CalendarPlus } from 'lucide-react';
 import './App.css';
 
+// Shared promo type
+export interface PromoItem {
+  id: string;
+  image: string;
+  name: string;
+  desc: string;
+  price: number;
+}
+
 // Complete Sawasdee authentic menu data
 const INITIAL_CATALOG_DATA: (DishItem & { category: 'starters' | 'thai' | 'indian' | 'naan' | 'drinks_desserts' })[] = [
   // --- ENTRADAS (Starters) ---
@@ -487,70 +496,62 @@ function App() {
   // Customization States
   const [selectedDishForCustomization, setSelectedDishForCustomization] = useState<DishItem | null>(null);
 
-  // Promotional Flyer state
-  const [promoImage, setPromoImage] = useState<string>(() => {
-    return localStorage.getItem('sawasdee_promo_image') || `${import.meta.env.BASE_URL}sawasdee_promo.png`;
+  // ── MULTI-PROMO STATE ──
+  const [promos, setPromos] = useState<PromoItem[]>(() => {
+    const saved = localStorage.getItem('sawasdee_promos');
+    if (saved) { try { return JSON.parse(saved); } catch { /* fall through */ } }
+    const oldImage = localStorage.getItem('sawasdee_promo_image') || `${import.meta.env.BASE_URL}sawasdee_promo.png`;
+    return [{ id: '1', image: oldImage, name: localStorage.getItem('sawasdee_promo_name') || '¡Promoción Especial!', desc: localStorage.getItem('sawasdee_promo_desc') || 'Agrega este plato exclusivo a tu pedido', price: Number(localStorage.getItem('sawasdee_promo_price')) || 75000 }];
   });
-  const [promoPrice, setPromoPrice] = useState<number>(() => {
-    return Number(localStorage.getItem('sawasdee_promo_price')) || 75000;
-  });
-  const [promoName, setPromoName] = useState<string>(() => {
-    return localStorage.getItem('sawasdee_promo_name') || '¡Promoción Especial!';
-  });
-  const [promoDesc, setPromoDesc] = useState<string>(() => {
-    return localStorage.getItem('sawasdee_promo_desc') || 'Agrega este plato exclusivo a tu pedido';
-  });
+  const [promoSlideIndex, setPromoSlideIndex] = useState<number>(0);
+  const [promoSlideDir, setPromoSlideDir] = useState<'left' | 'right'>('right');
   const [promoQuantity, setPromoQuantity] = useState<number>(1);
   const [showPromo, setShowPromo] = useState<boolean>(false);
 
-  const handleUploadPromoImage = (file: File) => {
+  // Derived: only promos that have an image
+  const validPromos = promos.filter(p => p.image);
+  const activePromo = validPromos[promoSlideIndex] ?? null;
+
+  const handlePromoSlide = (dir: 'left' | 'right') => {
+    setPromoSlideDir(dir);
+    setPromoSlideIndex(prev => {
+      if (dir === 'right') return (prev + 1) % validPromos.length;
+      return (prev - 1 + validPromos.length) % validPromos.length;
+    });
+    setPromoQuantity(1);
+  };
+
+  const handleAddPromo = () => {
+    const newPromo: PromoItem = { id: Date.now().toString(), image: '', name: '¡Nueva Promoción!', desc: 'Descripción de la promo', price: 75000 };
+    setPromos(prev => [...prev, newPromo]);
+  };
+
+  const handleDeletePromo = (id: string) => {
+    if (confirm('¿Eliminar esta promoción?')) setPromos(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleUpdatePromo = (id: string, field: keyof PromoItem, value: string | number) => {
+    setPromos(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
+  };
+
+  const handleUploadPromoImage = (id: string, file: File) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64String = reader.result as string;
-      localStorage.setItem('sawasdee_promo_image', base64String);
-      setPromoImage(base64String);
-      alert('¡Imagen de promoción cargada con éxito! Se mostrará en el próximo inicio de página.');
+      const base64 = reader.result as string;
+      setPromos(prev => prev.map(p => p.id === id ? { ...p, image: base64 } : p));
     };
     reader.readAsDataURL(file);
   };
 
-  const handleDeletePromoImage = () => {
-    if (confirm('¿Está seguro de que desea eliminar la imagen y desactivar la promoción?')) {
-      localStorage.removeItem('sawasdee_promo_image');
-      setPromoImage('');
-    }
-  };
-
-  const handleUpdatePromoPrice = (price: number) => {
-    localStorage.setItem('sawasdee_promo_price', String(price));
-    setPromoPrice(price);
-  };
-
-  const handleUpdatePromoName = (name: string) => {
-    localStorage.setItem('sawasdee_promo_name', name);
-    setPromoName(name);
-  };
-
-  const handleUpdatePromoDesc = (desc: string) => {
-    localStorage.setItem('sawasdee_promo_desc', desc);
-    setPromoDesc(desc);
+  const handleSavePromos = () => {
+    localStorage.setItem('sawasdee_promos', JSON.stringify(promos));
   };
 
   useEffect(() => {
-    // Show promotion popup 800ms after page loads
-    const timerShow = setTimeout(() => {
-      setShowPromo(true);
-    }, 800);
-
-    // Auto close after 10.8 seconds (800ms delay + 10000ms duration)
-    const timerClose = setTimeout(() => {
-      setShowPromo(false);
-    }, 10800);
-
-    return () => {
-      clearTimeout(timerShow);
-      clearTimeout(timerClose);
-    };
+    if (validPromos.length === 0) return;
+    const timerShow = setTimeout(() => setShowPromo(true), 800);
+    const timerClose = setTimeout(() => setShowPromo(false), 10800);
+    return () => { clearTimeout(timerShow); clearTimeout(timerClose); };
   }, []);
 
   // Sync Admin Credentials to edit states when opening modal
@@ -858,15 +859,12 @@ function App() {
         onLoginClick={() => setIsLoginOpen(true)}
         onLogoutClick={handleLogout}
         onEditCredentialsClick={() => setIsEditCredsOpen(true)}
+        promos={promos}
+        onAddPromo={handleAddPromo}
+        onDeletePromo={handleDeletePromo}
+        onUpdatePromo={handleUpdatePromo}
         onUploadPromoImage={handleUploadPromoImage}
-        promoImage={promoImage}
-        promoPrice={promoPrice}
-        onUpdatePromoPrice={handleUpdatePromoPrice}
-        onDeletePromoImage={handleDeletePromoImage}
-        promoName={promoName}
-        promoDesc={promoDesc}
-        onUpdatePromoName={handleUpdatePromoName}
-        onUpdatePromoDesc={handleUpdatePromoDesc}
+        onSavePromos={handleSavePromos}
       />
 
       {/* Hero Cover Banner */}
@@ -1179,220 +1177,155 @@ function App() {
         onConfirm={(dish, spice, notes) => addToCart(dish, spice, notes)}
       />
 
-      {/* 📣 MODAL DE PROMOCIÓN (Persiana emergente interactiva de 10 segundos) */}
-      {showPromo && promoImage && (
+      {/* 📣 MODAL DE PROMOCIÓN — Slider multi-promo con transición izq→der */}
+      {showPromo && activePromo && activePromo.image && (
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '1rem',
-          animation: 'fadeIn 0.3s ease'
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 1000, padding: '1rem', animation: 'fadeIn 0.3s ease'
         }}>
           <div style={{
-            position: 'relative',
-            background: 'var(--bg-card)',
-            border: '2px solid var(--primary)',
-            borderRadius: '24px',
-            maxWidth: '480px', // Substantially bigger!
-            width: '100%',
-            overflow: 'hidden',
+            position: 'relative', background: 'var(--bg-card)', border: '2px solid var(--primary)',
+            borderRadius: '24px', maxWidth: '480px', width: '100%', overflow: 'hidden',
             boxShadow: '0 25px 60px -15px rgba(210, 125, 45, 0.5)',
-            display: 'flex',
-            flexDirection: 'column',
+            display: 'flex', flexDirection: 'column',
             animation: 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
           }}>
-            {/* Close Icon (✕) at Top Right */}
-            <button
-              onClick={() => setShowPromo(false)}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                background: 'rgba(0, 0, 0, 0.7)',
-                border: '1px solid rgba(210, 125, 45, 0.4)',
-                color: 'white',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10,
-                transition: 'var(--transition)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--primary)';
-                e.currentTarget.style.color = '#0a0b0d';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.7)';
-                e.currentTarget.style.color = 'white';
-              }}
-            >
-              ✕
-            </button>
 
-            {/* Promo Flyer Image */}
-            <div style={{ width: '100%', aspectRatio: '0.85', overflow: 'hidden', background: '#0a0b0d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img 
-                src={promoImage} 
-                alt="Sawasdee Promoción" 
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+            {/* ✕ Close button */}
+            <button onClick={() => setShowPromo(false)} style={{
+              position: 'absolute', top: '14px', right: '14px', width: '34px', height: '34px',
+              borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(210,125,45,0.4)',
+              color: 'white', fontSize: '1rem', fontWeight: 700, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, transition: 'all 0.2s'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#0a0b0d'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)'; e.currentTarget.style.color = 'white'; }}
+            >✕</button>
+
+            {/* ── IMAGE SLIDER with CSS slide animation ── */}
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '0.85', overflow: 'hidden', background: '#0a0b0d' }}>
+              <img
+                key={`${activePromo.id}-${promoSlideIndex}`}
+                src={activePromo.image}
+                alt="Sawasdee Promoción"
+                style={{
+                  width: '100%', height: '100%', objectFit: 'contain',
+                  animation: `slideIn${promoSlideDir === 'right' ? 'Right' : 'Left'} 0.35s cubic-bezier(0.25,1,0.5,1) both`
+                }}
               />
+
+              {/* Left arrow — only if multiple promos */}
+              {validPromos.length > 1 && (
+                <button onClick={() => handlePromoSlide('left')} style={{
+                  position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)',
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)',
+                  color: 'white', fontSize: '1.1rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 10, transition: 'all 0.2s'
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--primary)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.55)'}
+                >‹</button>
+              )}
+
+              {/* Right arrow */}
+              {validPromos.length > 1 && (
+                <button onClick={() => handlePromoSlide('right')} style={{
+                  position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)',
+                  color: 'white', fontSize: '1.1rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 10, transition: 'all 0.2s'
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--primary)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.55)'}
+                >›</button>
+              )}
+
+              {/* Dots indicator */}
+              {validPromos.length > 1 && (
+                <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                  {validPromos.map((_, i) => (
+                    <div key={i} onClick={() => { setPromoSlideDir(i > promoSlideIndex ? 'right' : 'left'); setPromoSlideIndex(i); setPromoQuantity(1); }} style={{
+                      width: i === promoSlideIndex ? '18px' : '7px', height: '7px',
+                      borderRadius: '50px', background: i === promoSlideIndex ? 'var(--primary)' : 'rgba(255,255,255,0.4)',
+                      transition: 'all 0.3s', cursor: 'pointer'
+                    }} />
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Promotional Interaction Panel (Price, Quantity, Actions) */}
-            <div style={{ padding: '1.5rem', background: 'rgba(28, 23, 18, 0.95)', display: 'flex', flexDirection: 'column', gap: '1.25rem', borderTop: '1px solid rgba(210, 125, 45, 0.15)' }}>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h4 style={{ color: 'white', margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>{promoName}</h4>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{promoDesc}</span>
+            {/* Info + Actions Panel */}
+            <div style={{ padding: '1.25rem 1.5rem', background: 'rgba(28,23,18,0.96)', display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid rgba(210,125,45,0.15)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ color: 'white', margin: '0 0 3px', fontSize: '1.15rem', fontWeight: 800 }}>{activePromo.name}</h4>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{activePromo.desc}</span>
                 </div>
-                <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--primary)', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
-                  {promoPrice.toLocaleString()} Gs.
+                <div style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--primary)', whiteSpace: 'nowrap', marginLeft: '0.75rem' }}>
+                  {activePromo.price.toLocaleString()} Gs.
                 </div>
               </div>
 
-              {/* Quantity Selector row */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>Cantidad:</span>
+              {/* Quantity */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '0.65rem 1rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'white' }}>Cantidad:</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <button
-                    onClick={() => setPromoQuantity(Math.max(1, promoQuantity - 1))}
-                    style={{
-                      width: '32px', height: '32px', borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'white', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                  >
-                    -
-                  </button>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary)', minWidth: '20px', textAlign: 'center' }}>
-                    {promoQuantity}
-                  </span>
-                  <button
-                    onClick={() => setPromoQuantity(promoQuantity + 1)}
-                    style={{
-                      width: '32px', height: '32px', borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'white', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                  >
-                    +
-                  </button>
+                  <button onClick={() => setPromoQuantity(Math.max(1, promoQuantity - 1))} style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                  >-</button>
+                  <span style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--primary)', minWidth: '20px', textAlign: 'center' }}>{promoQuantity}</span>
+                  <button onClick={() => setPromoQuantity(promoQuantity + 1)} style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                  >+</button>
                 </div>
               </div>
 
-              {/* Action Buttons Row */}
+              {/* Buttons */}
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button
-                  onClick={() => setShowPromo(false)}
-                  style={{
-                    flex: 1,
-                    background: 'transparent',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    borderRadius: '12px',
-                    padding: '0.9rem',
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                    cursor: 'pointer',
-                    transition: 'var(--transition)'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  Cerrar
-                </button>
-                <button
-                  onClick={() => {
-                    const promoDish: DishItem = {
-                      id: 'sawasdee_special_promo',
-                      name: promoName,
-                      description: promoDesc,
-                      price: promoPrice,
-                      image: promoImage || 'sawasdee_promo.png',
-                    };
-                    addToCart(promoDish, undefined, undefined, promoQuantity);
-                    setShowPromo(false);
-                  }}
-                  style={{
-                    flex: 2,
-                    background: 'var(--primary)',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '0.9rem',
-                    color: '#0a0b0d',
-                    fontWeight: 800,
-                    fontSize: '0.95rem',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 15px rgba(210,125,45,0.25)',
-                    transition: 'var(--transition)'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--primary-hover)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--primary)'}
-                >
-                  Agregar ({(promoPrice * promoQuantity).toLocaleString()} Gs.)
-                </button>
+                <button onClick={() => setShowPromo(false)} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', padding: '0.8rem', color: 'white', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'background 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >Cerrar</button>
+                <button onClick={() => {
+                  const promoDish: DishItem = { id: `promo_${activePromo.id}`, name: activePromo.name, description: activePromo.desc, price: activePromo.price, image: activePromo.image };
+                  addToCart(promoDish, undefined, undefined, promoQuantity);
+                  setShowPromo(false);
+                }} style={{ flex: 2, background: 'var(--primary)', border: 'none', borderRadius: '10px', padding: '0.8rem', color: '#0a0b0d', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(210,125,45,0.25)', transition: 'background 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'var(--primary)'}
+                >Agregar ({(activePromo.price * promoQuantity).toLocaleString()} Gs.)</button>
               </div>
-
             </div>
 
-            {/* 10-second countdown visual indicator bar */}
-            <div style={{
-              width: '100%',
-              height: '4px',
-              background: 'rgba(255,255,255,0.1)',
-              position: 'relative'
-            }}>
-              <div style={{
-                height: '100%',
-                background: 'var(--primary)',
-                width: '100%',
-                animation: 'countdown 10s linear forwards'
-              }}></div>
+            {/* Countdown bar */}
+            <div style={{ width: '100%', height: '3px', background: 'rgba(255,255,255,0.08)' }}>
+              <div style={{ height: '100%', background: 'var(--primary)', animation: 'countdown 10s linear forwards' }}></div>
             </div>
           </div>
 
           <style>{`
-            @keyframes fadeIn {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            @keyframes scaleUp {
-              from { transform: scale(0.93); opacity: 0; }
-              to { transform: scale(1); opacity: 1; }
-            }
-            @keyframes countdown {
-              from { width: 100%; }
-              to { width: 0%; }
-            }
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes scaleUp { from { transform: scale(0.93); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+            @keyframes countdown { from { width: 100%; } to { width: 0%; } }
+            @keyframes slideInRight { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes slideInLeft  { from { transform: translateX(-60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
           `}</style>
         </div>
       )}
 
+
       {/* ========================================================================= */}
       {/* 🔐 MODAL DE INICIO DE SESIÓN */}
       {/* ========================================================================= */}
+
       {isLoginOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
