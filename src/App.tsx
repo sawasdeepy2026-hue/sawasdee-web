@@ -788,8 +788,6 @@ function App() {
     <div style={{ minHeight: '100vh', paddingBottom: '6rem', color: 'var(--text-main)' }}>
       {/* Header component */}
       <Header 
-        cartItemCount={totalCount} 
-        onOpenCart={() => setIsCartOpen(true)} 
         isAdmin={isAdmin}
         adminUsername={adminCredentials.username}
         onLoginClick={() => setIsLoginOpen(true)}

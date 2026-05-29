@@ -1,10 +1,8 @@
-import { ShoppingCart, ChevronDown, Menu } from 'lucide-react';
+import { ChevronDown, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 
 interface HeaderProps {
-  cartItemCount: number;
-  onOpenCart: () => void;
   isAdmin: boolean;
   adminUsername: string;
   onLoginClick: () => void;
@@ -21,8 +19,6 @@ const LANGUAGES = [
 ];
 
 export function Header({ 
-  cartItemCount, 
-  onOpenCart,
   isAdmin,
   adminUsername,
   onLoginClick,
@@ -324,56 +320,9 @@ export function Header({
           </svg>
         </div>
 
-        {/* Column 3 (Right): Cart Button (flex-end) */}
+        {/* Column 3 (Right): Spacer to keep logo centered */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-          <button 
-            onClick={onOpenCart}
-            style={{
-              background: 'var(--primary)',
-              color: '#0a0b0d',
-              border: 'none',
-              borderRadius: '50px',
-              padding: '0.65rem 1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.65rem',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(210, 125, 45, 0.2)',
-              transition: 'var(--transition)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.backgroundColor = 'var(--primary-hover)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.backgroundColor = 'var(--primary)';
-            }}
-          >
-            <ShoppingCart size={18} />
-            <span style={{ display: 'inline' }}>Pedido</span>
-            {cartItemCount > 0 && (
-              <div 
-                style={{
-                  background: '#0a0b0d',
-                  color: 'var(--primary)',
-                  minWidth: '22px',
-                  height: '22px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  fontWeight: 800,
-                  boxShadow: 'inset 0 0 5px rgba(210, 125, 45, 0.2)'
-                }}
-              >
-                {cartItemCount}
-              </div>
-            )}
-          </button>
+          {/* Cart Button removed as requested to avoid redundancy with the floating bottom bar */}
         </div>
 
       </div>
