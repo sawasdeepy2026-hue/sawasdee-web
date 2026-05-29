@@ -282,7 +282,7 @@ export function Header({
               </filter>
             </defs>
             <image 
-              href="/logo.png" 
+              href={`${import.meta.env.BASE_URL}logo.png`}
               width="100%" 
               height="100%" 
               preserveAspectRatio="xMidYMid meet"
