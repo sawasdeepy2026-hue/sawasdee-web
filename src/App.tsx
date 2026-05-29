@@ -487,6 +487,40 @@ function App() {
   // Customization States
   const [selectedDishForCustomization, setSelectedDishForCustomization] = useState<DishItem | null>(null);
 
+  // Promotional Flyer state
+  const [promoImage, setPromoImage] = useState<string>(() => {
+    return localStorage.getItem('sawasdee_promo_image') || `${import.meta.env.BASE_URL}sawasdee_promo.png`;
+  });
+  const [showPromo, setShowPromo] = useState<boolean>(false);
+
+  const handleUploadPromoImage = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      localStorage.setItem('sawasdee_promo_image', base64String);
+      setPromoImage(base64String);
+      alert('¡Imagen de promoción cargada con éxito! Se mostrará en el próximo inicio de página.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  useEffect(() => {
+    // Show promotion popup 800ms after page loads
+    const timerShow = setTimeout(() => {
+      setShowPromo(true);
+    }, 800);
+
+    // Auto close after 5.8 seconds (800ms delay + 5000ms duration)
+    const timerClose = setTimeout(() => {
+      setShowPromo(false);
+    }, 5800);
+
+    return () => {
+      clearTimeout(timerShow);
+      clearTimeout(timerClose);
+    };
+  }, []);
+
   // Sync Admin Credentials to edit states when opening modal
   useEffect(() => {
     if (isEditCredsOpen) {
@@ -793,6 +827,8 @@ function App() {
         onLoginClick={() => setIsLoginOpen(true)}
         onLogoutClick={handleLogout}
         onEditCredentialsClick={() => setIsEditCredsOpen(true)}
+        onUploadPromoImage={handleUploadPromoImage}
+        promoImage={promoImage}
       />
 
       {/* Hero Cover Banner */}
@@ -1104,6 +1140,114 @@ function App() {
         dish={selectedDishForCustomization}
         onConfirm={(dish, spice, notes) => addToCart(dish, spice, notes)}
       />
+
+      {/* 📣 MODAL DE PROMOCIÓN (Persiana emergente autodescartable de 5 segundos) */}
+      {showPromo && promoImage && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.82)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1.5rem',
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          <div style={{
+            position: 'relative',
+            background: 'var(--bg-card)',
+            border: '2px solid var(--primary)',
+            borderRadius: '20px',
+            maxWidth: '345px',
+            width: '100%',
+            overflow: 'hidden',
+            boxShadow: '0 25px 60px -15px rgba(210, 125, 45, 0.45)',
+            display: 'flex',
+            flexDirection: 'column',
+            animation: 'scaleUp 0.45s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}>
+            {/* Close Button (X) */}
+            <button
+              onClick={() => setShowPromo(false)}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'rgba(0, 0, 0, 0.65)',
+                border: '1px solid rgba(210, 125, 45, 0.4)',
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10,
+                transition: 'var(--transition)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--primary)';
+                e.currentTarget.style.color = '#0a0b0d';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.65)';
+                e.currentTarget.style.color = 'white';
+              }}
+            >
+              ✕
+            </button>
+
+            {/* Promo Flyer Image */}
+            <div style={{ width: '100%', aspectRatio: '0.73', overflow: 'hidden', background: '#0a0b0d' }}>
+              <img 
+                src={promoImage} 
+                alt="Sawasdee Promoción" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+              />
+            </div>
+
+            {/* Automatic Close Countdown Progress Bar */}
+            <div style={{
+              width: '100%',
+              height: '4px',
+              background: 'rgba(255,255,255,0.1)',
+              position: 'relative'
+            }}>
+              <div style={{
+                height: '100%',
+                background: 'var(--primary)',
+                width: '100%',
+                animation: 'countdown 5s linear forwards'
+              }}></div>
+            </div>
+          </div>
+
+          {/* Inline CSS Animations for Pop-up */}
+          <style>{`
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes scaleUp {
+              from { transform: scale(0.93); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+            @keyframes countdown {
+              from { width: 100%; }
+              to { width: 0%; }
+            }
+          `}</style>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 🔐 MODAL DE INICIO DE SESIÓN */}

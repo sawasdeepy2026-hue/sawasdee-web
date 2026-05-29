@@ -8,6 +8,8 @@ interface HeaderProps {
   onLoginClick: () => void;
   onLogoutClick: () => void;
   onEditCredentialsClick: () => void;
+  onUploadPromoImage: (file: File) => void;
+  promoImage: string;
 }
 
 const LANGUAGES = [
@@ -23,7 +25,9 @@ export function Header({
   adminUsername,
   onLoginClick,
   onLogoutClick,
-  onEditCredentialsClick
+  onEditCredentialsClick,
+  onUploadPromoImage,
+  promoImage
 }: HeaderProps) {
   const { i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -152,7 +156,65 @@ export function Header({
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>
               Ingresa para gestionar el menú, modificar precios, agregar platos y cambiar imágenes de tus especialidades.
             </p>
-            
+
+            {isAdmin && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+                <label 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    background: 'rgba(210, 125, 45, 0.1)',
+                    border: '1px dashed var(--primary)',
+                    borderRadius: '10px',
+                    padding: '0.75rem',
+                    cursor: 'pointer',
+                    color: 'var(--primary)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    transition: 'all 0.2s',
+                    textAlign: 'center'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(210, 125, 45, 0.2)';
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(210, 125, 45, 0.1)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                  <span>Cargar Imagen de Promoción</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        onUploadPromoImage(e.target.files[0]);
+                      }
+                    }} 
+                    style={{ display: 'none' }} 
+                  />
+                </label>
+                {promoImage && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0 0.25rem' }}>
+                    <span>Miniatura actual:</span>
+                    <img 
+                      src={promoImage} 
+                      alt="Miniatura Promo" 
+                      style={{ height: '35px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)', objectFit: 'cover', aspectRatio: '1' }} 
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             {isAdmin ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: 'auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#4ade80', fontSize: '0.85rem', fontWeight: 700 }}>
