@@ -15,6 +15,7 @@ interface HeaderProps {
   onUpdatePromo: (id: string, field: keyof PromoItem, value: string | number) => void;
   onUploadPromoImage: (id: string, file: File) => void;
   onSavePromos: () => void;
+  onShowPromoClick: () => void;
 }
 
 const LANGUAGES = [
@@ -36,7 +37,8 @@ export function Header({
   onDeletePromo,
   onUpdatePromo,
   onUploadPromoImage,
-  onSavePromos
+  onSavePromos,
+  onShowPromoClick
 }: HeaderProps) {
   const { i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -362,8 +364,8 @@ export function Header({
         </div>
 
         {/* CENTER: Brand Logo */}
-        <div style={{ flex: '0 0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <svg width="240" height="90" viewBox="0 0 360 170" style={{ pointerEvents: 'none' }}>
+        <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+          <svg width="240" height="90" viewBox="0 0 360 170" style={{ pointerEvents: 'none', marginBottom: promos.some(p => p.image) ? '-15px' : '0' }}>
             <defs>
               <filter id="remove-black" colorInterpolationFilters="sRGB">
                 <feColorMatrix type="matrix" values="
@@ -376,6 +378,37 @@ export function Header({
             </defs>
             <image href={`${import.meta.env.BASE_URL}logo.png`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" filter="url(#remove-black)" />
           </svg>
+          {promos.length > 0 && promos.some(p => p.image) && (
+            <button 
+              onClick={onShowPromoClick}
+              style={{
+                background: 'var(--primary)',
+                color: '#0a0b0d',
+                border: 'none',
+                padding: '0.3rem 1.2rem',
+                borderRadius: '50px',
+                fontWeight: 900,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(210,125,45,0.4)',
+                animation: 'pulsePromo 2s infinite cubic-bezier(0.4, 0, 0.6, 1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                zIndex: 10
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              🔥 Ver Promociones
+            </button>
+          )}
+          <style>{`
+            @keyframes pulsePromo {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.85; transform: scale(1.03); }
+            }
+          `}</style>
         </div>
 
         {/* RIGHT: Spacer */}

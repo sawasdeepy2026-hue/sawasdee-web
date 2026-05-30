@@ -876,6 +876,7 @@ function App() {
         onUpdatePromo={handleUpdatePromo}
         onUploadPromoImage={handleUploadPromoImage}
         onSavePromos={handleSavePromos}
+        onShowPromoClick={() => setShowPromo(true)}
       />
 
       {/* Hero Cover Banner */}
