@@ -554,6 +554,17 @@ function App() {
     return () => { clearTimeout(timerShow); clearTimeout(timerClose); };
   }, []);
 
+  // Auto-advance slide every 7 seconds when modal is open and has multiple promos
+  useEffect(() => {
+    if (!showPromo || validPromos.length <= 1) return;
+    const interval = setInterval(() => {
+      setPromoSlideDir('right');
+      setPromoSlideIndex(prev => (prev + 1) % validPromos.length);
+      setPromoQuantity(1);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, [showPromo, validPromos.length]);
+
   // Sync Admin Credentials to edit states when opening modal
   useEffect(() => {
     if (isEditCredsOpen) {
